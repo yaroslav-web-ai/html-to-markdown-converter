@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML to Markdown Converter - Фінальна версія</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .result-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .result-textarea {
+            width: 100%;
+            height: 400px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            resize: vertical;
+            display: block;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .result-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+
+            .buttons {
+                justify-content: center;
+            }
+
+            .result-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HTML → Markdown</h1>
+        <p class="subtitle">Конвертер з правильними таблицями та завантаженням</p>
+
+        <!-- Введення HTML -->
+        <div class="input-section">
+            <div class="section-title">
+                <span>📝</span> Вставте HTML код
+            </div>
+            <textarea id="html-input" placeholder="Вставте HTML код веб-сторінки сюди...
+
+Інструкція:
+1. Відкрийте потрібну веб-сторінку
+2. Натисніть Ctrl+U (або Cmd+Option+U на Mac)
+3. Скопіюйте весь HTML код (Ctrl+A, потім Ctrl+C)
+4. Вставте код сюди та натисніть 'Конвертувати'"></textarea>
+            
+            <div class="buttons">
+                <button class="btn" onclick="convertHTML()">
+                    <span>🔄</span> Конвертувати в Markdown
+                </button>
+                <button class="btn btn-secondary" onclick="loadExample()">
+                    <span>📄</span> Завантажити приклад
+                </button>
+                <button class="btn btn-secondary" onclick="clearHTML()">
+                    <span>🗑️</span> Очистити
+                </button>
+                <button class="btn btn-warning" onclick="copyDiagnostics()">
+                    <span>📋</span> Копіювати діагностику
+                </button>
+            </div>
+        </div>
+
+        <!-- Результат -->
+        <div id="result-section" class="result-section">
+            <div class="result-header">
+                <div class="section-title">
+                    <span>✅</span> Результат конвертації
+                </div>
+                <div class="result-stats">
+                    <span id="char-count">0 символів</span>
+                    <span id="word-count">0 слів</span>
+                    <span id="line-count">0 рядків</span>
+                </div>
+            </div>
+
+            <textarea id="markdown-output" readonly class="result-textarea" placeholder="Тут з'явиться результат конвертації..."></textarea>
+            
+            <div class="buttons">
+                <button class="btn btn-success" onclick="copyResult()">
+                    <span>📋</span> Копіювати Markdown
+                </button>
+                <button class="btn btn-success" onclick="downloadResult()">
+                    <span>💾</span> Завантажити файл
+                </button>
+                <button class="btn btn-danger" onclick="toggleResultSize()">
+                    <span>📏</span> <span id="toggle-text">Збільшити</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Повідомлення -->
+        <div id="message" class="hidden"></div>
+    </div>
+
+    <script>
+        let currentMarkdown = '';
+        let diagnosticsLog = [];
+        let isResultExpanded = false;
+
+        // Система діагностики
+        function logDiagnostic(message) {
+            console.log(message);
+            diagnosticsLog.push(`${new Date().toLocaleTimeString()}: ${message}`);
+        }
+        
+        function clearDiagnostics() {
+            diagnosticsLog = [];
+        }
+        
+        function copyDiagnostics() {
+            if (diagnosticsLog.length === 0) {
+                alert('❌ Немає діагностичних даних. Спочатку запустіть конвертацію.');
+                return;
+            }
+            
+            const diagnosticsText = `=== ДІАГНОСТИКА HTML TO MARKDOWN ===
+${diagnosticsLog.join('\n')}
+
+=== КІНЕЦЬ ДІАГНОСТИКИ ===
+Всього записів: ${diagnosticsLog.length}
+Згенеровано: ${new Date().toLocaleString()}`;
+
+            navigator.clipboard.writeText(diagnosticsText).then(() => {
+                showMessage('✅ Діагностику скопійовано в буфер обміну!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = diagnosticsText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showMessage('✅ Діагностику скопійовано!', 'success');
+            });
+        }
+
+        // Очищення HTML від технічних елементів
+        function cleanHTML(doc) {
+            logDiagnostic('🧹 Починаємо очищення HTML...');
+            
+            // Список елементів для видалення
+            const elementsToRemove = [
+                'style',     // CSS стилі
+                'script',    // JavaScript код
+                'link',      // Зовнішні ресурси (CSS, іконки)
+                'meta',      // Мета-теги
+                'noscript',  // Noscript блоки
+                'iframe',    // Вбудовані фрейми
+                'object',    // Об'єкти Flash тощо
+                'embed',     // Вбудовані медіа
+                'audio',     // Аудіо (залишаємо тільки контентні елементи)
+                'video',     // Відео (залишаємо тільки контентні елементи)
+                'canvas',    // Canvas елементи
+                'svg',       // SVG графіка (може містити багато коду)
+                'head'       // Весь head блок
+            ];
+            
+            let removedCount = 0;
+            
+            // Видаляємо всі технічні елементи
+            elementsToRemove.forEach(tagName => {
+                const elements = doc.querySelectorAll(tagName);
+                elements.forEach(element => {
+                    element.remove();
+                    removedCount++;
+                });
+            });
+            
+            logDiagnostic(`🗑️ Видалено ${removedCount} технічних елементів`);
+            
+            // Очищаємо атрибути стилів та подій
+            const allElements = doc.querySelectorAll('*');
+            let cleanedAttributes = 0;
+            
+            allElements.forEach(element => {
+                // Список атрибутів для видалення
+                const attributesToRemove = [
+                    'style',      // Інлайн стилі
+                    'class',      // CSS класи
+                    'id',         // ID (можуть бути технічними)
+                    'onclick',    // JavaScript події
+                    'onload',
+                    'onmouseover',
+                    'onmouseout',
+                    'onfocus',
+                    'onblur',
+                    'onchange',
+                    'onsubmit',
+                    'data-*'      // Data атрибути
+                ];
+                
+                // Видаляємо стандартні атрибути
+                attributesToRemove.forEach(attr => {
+                    if (attr === 'data-*') {
+                        // Видаляємо всі data-* атрибути
+                        const attributes = Array.from(element.attributes);
+                        attributes.forEach(attribute => {
+                            if (attribute.name.startsWith('data-')) {
+                                element.removeAttribute(attribute.name);
+                                cleanedAttributes++;
+                            }
+                        });
+                    } else if (element.hasAttribute(attr)) {
+                        element.removeAttribute(attr);
+                        cleanedAttributes++;
+                    }
+                });
+            });
+            
+            logDiagnostic(`🧽 Очищено ${cleanedAttributes} атрибутів`);
+            
+            // Видаляємо порожні елементи (крім br, hr, img)
+            const allElementsAfterClean = doc.querySelectorAll('*');
+            let removedEmptyElements = 0;
+            
+            allElementsAfterClean.forEach(element => {
+                const tagName = element.tagName.toLowerCase();
+                const allowedEmptyElements = ['br', 'hr', 'img', 'input', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
+                
+                if (!allowedEmptyElements.includes(tagName) && 
+                    !element.textContent.trim() && 
+                    element.children.length === 0) {
+                    element.remove();
+                    removedEmptyElements++;
+                }
+            });
+            
+            logDiagnostic(`🗑️ Видалено ${removedEmptyElements} порожніх елементів`);
+            logDiagnostic('✅ Очищення HTML завершено');
+            
+            return doc;
+        }
+
+        // Основна функція конвертації HTML
+        function convertHTML() {
+            clearDiagnostics();
+            
+            const htmlContent = document.getElementById('html-input').value.trim();
+            
+            logDiagnostic('🔍 convertHTML ПОЧАТОК');
+            logDiagnostic(`📏 Розмір вхідного HTML: ${htmlContent.length} символів`);
+            
+            if (!htmlContent) {
+                showMessage('Будь ласка, вставте HTML код', 'error');
+                return;
+            }
+
+            try {
+                const parser = new DOMParser();
+                let doc = parser.parseFromString(htmlContent, 'text/html');
+                
+                logDiagnostic('🔄 HTML успішно спарсено');
+                logDiagnostic(`📊 DOM статистика ДО очищення: Body текст = ${doc.body ? doc.body.textContent.length : 0} символів`);
+                
+                if (!doc || !doc.body) {
+                    throw new Error('Не вдалося розпарсити HTML');
+                }
+                
+                // ОЧИЩАЄМО HTML від технічних елементів
+                doc = cleanHTML(doc);
+                
+                logDiagnostic(`📊 DOM статистика ПІСЛЯ очищення: Body текст = ${doc.body ? doc.body.textContent.length : 0} символів`);
+                
+                logDiagnostic('🚀 Передаємо в htmlToMarkdown...');
+                const markdown = htmlToMarkdown(doc);
+                
+                if (!markdown || markdown.trim().length === 0) {
+                    throw new Error('Результат конвертації порожній');
+                }
+                
+                logDiagnostic(`✅ convertHTML ЗАВЕРШЕНО, результат: ${markdown.length} символів`);
+                showResult(markdown);
+                
+            } catch (error) {
+                logDiagnostic(`❌ Помилка convertHTML: ${error.message}`);
+                showMessage('Помилка при обробці HTML: ' + error.message, 'error');
+            }
+        }
+
+        // Конвертація HTML в Markdown
+        function htmlToMarkdown(doc) {
+            logDiagnostic('🔍 htmlToMarkdown ПОЧАТОК');
+            let markdown = '';
+
+            // Знаходимо найбільший контент
+            let contentElement = findBestContent(doc);
+            
+            if (!contentElement) {
+                logDiagnostic('❌ Не знайдено жодного контенту');
+                return '';
+            }
+
+            logDiagnostic('🔄 Початок конвертації елементів...');
+            const convertedContent = convertElement(contentElement);
+            logDiagnostic(`📏 Після convertElement, довжина: ${convertedContent.length}`);
+            
+            markdown += convertedContent;
+            
+            const trimmedMarkdown = markdown.trim();
+            logDiagnostic(`🏁 htmlToMarkdown ЗАВЕРШЕННЯ: ${trimmedMarkdown.length} символів`);
+
+            return trimmedMarkdown;
+        }
+
+        // Знаходимо найкращий контент (ПОЧИНАЮЧИ З H1)
+        function findBestContent(doc) {
+            logDiagnostic('🔍 Шукаємо H1 для початку конвертації...');
+            
+            // КРОК 1: Знаходимо перший H1
+            const h1 = doc.querySelector('h1');
+            if (!h1) {
+                logDiagnostic('❌ H1 не знайдено, використовуємо fallback');
+                return findFallbackContent(doc);
+            }
+            
+            logDiagnostic(`✅ Знайдено H1: "${h1.textContent.trim()}"`);
+            
+            // КРОК 2: Створюємо контейнер для контенту починаючи з H1
+            const container = document.createElement('div');
+            
+            // КРОК 3: Додаємо H1 як перший елемент
+            container.appendChild(h1.cloneNode(true));
+            
+            // КРОК 4: Знаходимо всі елементи ПІСЛЯ H1
+            let currentElement = h1;
+            while (currentElement.nextElementSibling) {
+                currentElement = currentElement.nextElementSibling;
+                container.appendChild(currentElement.cloneNode(true));
+                logDiagnostic(`➕ Додано елемент після H1: ${currentElement.tagName}`);
+            }
+            
+            // КРОК 5: Якщо H1 був в контейнері, шукаємо наступні контейнери на тому ж рівні
+            let parentContainer = h1.parentElement;
+            if (parentContainer && parentContainer !== doc.body) {
+                let nextContainer = parentContainer;
+                while (nextContainer.nextElementSibling) {
+                    nextContainer = nextContainer.nextElementSibling;
+                    
+                    // Додаємо тільки контейнери з корисним контентом
+                    if (nextContainer.textContent.trim().length > 50) {
+                        container.appendChild(nextContainer.cloneNode(true));
+                        logDiagnostic(`➕ Додано наступний контейнер: ${nextContainer.tagName}`);
+                    }
+                }
+            }
+            
+            logDiagnostic(`✅ Створено контент починаючи з H1: ${container.textContent.length} символів`);
+            return container;
+        }
+
+        // Fallback якщо H1 не знайдено
+        function findFallbackContent(doc) {
+            const contentSelectors = [
+                'article',
+                'main', 
+                '.content',
+                '.post-content',
+                '.entry-content',
+                '#content'
+            ];
+
+            let contentElement = null;
+            let maxTextLength = 0;
+            
+            for (const selector of contentSelectors) {
+                const elements = doc.querySelectorAll(selector);
+                elements.forEach(element => {
+                    const textLength = element.textContent.trim().length;
+                    logDiagnostic(`🔍 Fallback перевірка ${selector}: ${textLength} символів`);
+                    
+                    if (textLength > maxTextLength && textLength > 1000) {
+                        maxTextLength = textLength;
+                        contentElement = element;
+                    }
+                });
+            }
+
+            if (contentElement) {
+                logDiagnostic(`✅ Fallback вибрано: ${maxTextLength} символів`);
+                return contentElement;
+            }
+
+            logDiagnostic('🔄 Останній fallback: використовуємо body');
+            return doc.body;
+        }
+
+        // Конвертація елементів
+        function convertElement(element) {
+            let markdown = '';
+            let processedNodes = 0;
+            
+            logDiagnostic(`🔄 convertElement: ${element.childNodes.length} дочірніх вузлів`);
+            
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const child = element.childNodes[i];
+                
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const text = child.textContent.replace(/\s+/g, ' ').trim();
+                    if (text) {
+                        markdown += text + ' ';
+                        processedNodes++;
+                    }
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    const elementResult = convertHTMLElement(child);
+                    markdown += elementResult;
+                    if (elementResult) processedNodes++;
+                }
+            }
+
+            logDiagnostic(`✅ convertElement завершено: ${processedNodes} вузлів, ${markdown.length} символів`);
+            return markdown;
+        }
+
+        // Конвертація HTML елементів
+        function convertHTMLElement(element) {
+            const tagName = element.tagName.toLowerCase();
+            const text = element.textContent.trim();
+            
+            if (!text && !['img', 'hr', 'br', 'table'].includes(tagName)) return '';
+
+            switch (tagName) {
+                case 'h1': return `\n# ${text}\n\n`;
+                case 'h2': return `\n## ${text}\n\n`;
+                case 'h3': return `\n### ${text}\n\n`;
+                case 'h4': return `\n#### ${text}\n\n`;
+                case 'h5': return `\n##### ${text}\n\n`;
+                case 'h6': return `\n###### ${text}\n\n`;
+                case 'p': 
+                    return `\n${convertElement(element)}\n\n`;
+                case 'strong':
+                case 'b': 
+                    return `**${text}**`;
+                case 'em':
+                case 'i': 
+                    return `*${text}*`;
+                case 'code': 
+                    return `\`${text}\``;
+                case 'pre': 
+                    const codeElement = element.querySelector('code');
+                    const codeText = codeElement ? codeElement.textContent : text;
+                    return `\n\`\`\`\n${codeText}\n\`\`\`\n\n`;
+                case 'a':
+                    const href = element.getAttribute('href');
+                    // Пропускаємо внутрішні посилання
+                    if (!href || 
+                        href.startsWith('#') || 
+                        href === '' || 
+                        href.startsWith('javascript:') ||
+                        href.includes('#')
+                    ) {
+                        return text;
+                    }
+                    return `[${text}](${href})`;
+                case 'img':
+                    const src = element.getAttribute('src');
+                    const alt = element.getAttribute('alt') || 'зображення';
+                    return src ? `![${alt}](${src})` : '';
+                case 'ul':
+                    return convertList(element, false);
+                case 'ol':
+                    return convertList(element, true);
+                case 'li':
+                    return convertElement(element);
+                case 'blockquote':
+                    return `\n> ${convertElement(element)}\n\n`;
+                case 'table':
+                    return convertTable(element);
+                case 'br': 
+                    return '\n';
+                case 'hr': 
+                    return '\n---\n\n';
+                default: 
+                    return convertElement(element);
+            }
+        }
+
+        // Конвертація списків
+        function convertList(listElement, isOrdered) {
+            let markdown = '\n';
+            const items = listElement.querySelectorAll(':scope > li');
+            
+            items.forEach((item, index) => {
+                const prefix = isOrdered ? `${index + 1}. ` : '- ';
+                const content = convertElement(item).trim();
+                markdown += `${prefix}${content}\n`;
+            });
+            
+            return markdown + '\n';
+        }
+
+        // Конвертація таблиць
+        function convertTable(table) {
+            let markdown = '\n';
+            const rows = table.querySelectorAll('tr');
+            
+            if (rows.length === 0) {
+                logDiagnostic('⚠️ Таблиця без рядків');
+                return '';
+            }
+            
+            logDiagnostic(`📊 Конвертуємо таблицю: ${rows.length} рядків`);
+            
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('td, th');
+                if (cells.length === 0) return;
+                
+                // Створюємо рядок таблиці
+                const cellContents = Array.from(cells).map(cell => {
+                    let text = cell.textContent.trim();
+                    text = text.replace(/\s+/g, ' '); // Очищаємо пробіли
+                    text = text.replace(/\|/g, '\\|'); // Екрануємо |
+                    if (text.length > 50) { // Обрізаємо довгі
+                        text = text.substring(0, 47) + '...';
+                    }
+                    return text || ' ';
+                });
+                
+                markdown += `| ${cellContents.join(' | ')} |\n`;
+                
+                // Додаємо роздільник після першого рядку
+                if (rowIndex === 0) {
+                    const separator = '|' + ' --- |'.repeat(cells.length) + '\n';
+                    markdown += separator;
+                    logDiagnostic(`📋 Додано роздільник: ${cells.length} колонок`);
+                }
+            });
+            
+            markdown += '\n';
+            logDiagnostic(`✅ Таблиця конвертована успішно`);
+            
+            return markdown;
+        }
+
+        // Завантаження прикладу
+        function loadExample() {
+            const exampleHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Приклад статті з таблицею</title>
+</head>
+<body>
+    <article>
+        <h1>Суфікси в англійській мові</h1>
+        
+        <p>Суфікси в англійській мові — це частини слова, які додаються до основи для утворення нових слів.</p>
+        
+        <h2>Основні типи суфіксів</h2>
+        
+        <h3>Суфікси іменників</h3>
+        <ul>
+            <li>-tion (action)</li>
+            <li>-ness (happiness)</li>
+            <li>-ment (development)</li>
+        </ul>
+        
+        <h3>Таблиця популярних суфіксів</h3>
+        <table>
+            <tr>
+                <th>Суфікс</th>
+                <th>Значення</th>
+                <th>Приклад</th>
+                <th>Переклад</th>
+            </tr>
+            <tr>
+                <td>-able</td>
+                <td>здатність</td>
+                <td>readable</td>
+                <td>читабельний</td>
+            </tr>
+            <tr>
+                <td>-ful</td>
+                <td>повний чогось</td>
+                <td>beautiful</td>
+                <td>красивий</td>
+            </tr>
+            <tr>
+                <td>-less</td>
+                <td>без чогось</td>
+                <td>homeless</td>
+                <td>бездомний</td>
+            </tr>
+            <tr>
+                <td>-ly</td>
+                <td>спосіб дії</td>
+                <td>quickly</td>
+                <td>швидко</td>
+            </tr>
+        </table>
+        
+        <h2>Висновок</h2>
+        <p>Знання суфіксів допомагає <strong>краще розуміти</strong> англійську мову та <em>розширювати словниковий запас</em>.</p>
+        
+        <blockquote>
+            <p>Вивчення суфіксів — це ключ до розуміння структури англійських слів.</p>
+        </blockquote>
+    </article>
+</body>
+</html>`;
+            
+            document.getElementById('html-input').value = exampleHTML;
+            showMessage('📄 Приклад завантажено! Тепер натисніть "Конвертувати"', 'success');
+        }
+
+        // Очищення
+        function clearHTML() {
+            document.getElementById('html-input').value = '';
+            document.getElementById('result-section').style.display = 'none';
+            currentMarkdown = '';
+        }
+
+        // Показ результату
+        function showResult(markdown) {
+            currentMarkdown = markdown;
+            
+            // Статистика
+            const charCount = markdown.length;
+            const wordCount = markdown.trim().split(/\s+/).filter(word => word.length > 0).length;
+            const lineCount = markdown.split('\n').length;
+            
+            document.getElementById('char-count').textContent = charCount.toLocaleString() + ' символів';
+            document.getElementById('word-count').textContent = wordCount.toLocaleString() + ' слів';
+            document.getElementById('line-count').textContent = lineCount.toLocaleString() + ' рядків';
+            
+            // Відображення
+            const outputTextarea = document.getElementById('markdown-output');
+            outputTextarea.value = markdown;
+            
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+            
+            logDiagnostic(`✅ Результат відображено: ${charCount} символів`);
+        }
+
+        // Копіювання результату
+        function copyResult() {
+            if (!currentMarkdown) {
+                showMessage('❌ Немає контенту для копіювання', 'error');
+                return;
+            }
+            
+            navigator.clipboard.writeText(currentMarkdown).then(() => {
+                showMessage('✅ Markdown скопійовано в буфер обміну!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = currentMarkdown;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showMessage('✅ Markdown скопійовано!', 'success');
+            });
+        }
+
+        // СТВОРЕННЯ ФАЙЛУ з можливістю вибору дії користувачем
+        function downloadResult() {
+            if (!currentMarkdown || currentMarkdown.length === 0) {
+                showMessage('❌ Немає контенту для завантаження. Спочатку зконвертуйте HTML.', 'error');
+                return;
+            }
+            
+            logDiagnostic('💾 Створюємо файл для користувача...');
+            
+            // Генеруємо ім'я файлу
+            const now = new Date();
+            const timestamp = now.getFullYear() + 
+                             String(now.getMonth() + 1).padStart(2, '0') + 
+                             String(now.getDate()).padStart(2, '0') + '_' +
+                             String(now.getHours()).padStart(2, '0') + 
+                             String(now.getMinutes()).padStart(2, '0');
+            const fileName = `markdown_${timestamp}.md`;
+            
+            logDiagnostic(`📝 Ім'я файлу: ${fileName}`);
+            
+            // Створюємо файл
+            const blob = new Blob([currentMarkdown], {type: 'text/plain;charset=utf-8'});
+            const fileUrl = URL.createObjectURL(blob);
+            const fileSize = (blob.size / 1024).toFixed(1);
+            
+            logDiagnostic(`📦 Файл створено, розмір: ${fileSize} KB`);
+            
+            // Показуємо діалог з опціями
+            showFileActionDialog(fileName, fileUrl, fileSize, blob);
+        }
+        
+        // ЄДИНИЙ НАДІЙНИЙ метод - копіювання тексту
+        function downloadResult() {
+            if (!currentMarkdown || currentMarkdown.length === 0) {
+                showMessage('❌ Немає контенту для завантаження. Спочатку зконвертуйте HTML.', 'error');
+                return;
+            }
+            
+            logDiagnostic('💾 Показуємо надійний метод збереження...');
+            
+            // Генеруємо ім'я файлу
+            const now = new Date();
+            const timestamp = now.getFullYear() + 
+                             String(now.getMonth() + 1).padStart(2, '0') + 
+                             String(now.getDate()).padStart(2, '0') + '_' +
+                             String(now.getHours()).padStart(2, '0') + 
+                             String(now.getMinutes()).padStart(2, '0');
+            const fileName = `markdown_${timestamp}.md`;
+            
+            const fileSize = (currentMarkdown.length / 1024).toFixed(1);
+            
+            logDiagnostic(`📝 Рекомендоване ім'я файлу: ${fileName}`);
+            logDiagnostic(`📦 Розмір: ${fileSize} KB`);
+            
+            // Показуємо простий діалог копіювання
+            showCopyDialog(fileName, fileSize);
+        }
+        
+        // Простий діалог тільки для копіювання
+        function showCopyDialog(fileName, fileSize) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(3px);
+            `;
+            
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                max-width: 600px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+                border: 1px solid #e0e0e0;
+                text-align: center;
+            `;
+            
+            dialog.innerHTML = `
+                <div style="margin-bottom: 25px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                    <h3 style="margin: 0 0 10px 0; color: #333; font-size: 1.4rem;">Збереження файлу</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">Рекомендоване ім'я: ${fileName}</div>
+                        <div style="color: #666; font-size: 0.9rem;">Розмір: ${fileSize} KB</div>
+                    </div>
+                </div>
+                
+                <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h4 style="margin: 0 0 15px 0; color: #0066cc;">📋 Єдиний надійний метод</h4>
+                    <p style="margin: 0 0 15px 0; color: #333; line-height: 1.6; text-align: left;">
+                        <strong>Крок 1:</strong> Натисніть кнопку "Копіювати текст"<br>
+                        <strong>Крок 2:</strong> Відкрийте текстовий редактор (Блокнот, VS Code, Notepad++)<br>
+                        <strong>Крок 3:</strong> Вставте текст (Ctrl+V)<br>
+                        <strong>Крок 4:</strong> Збережіть файл як <strong>${fileName}</strong>
+                    </p>
+                    
+                    <button id="copyTextBtn" style="
+                        background: #28a745; 
+                        color: white; 
+                        border: none; 
+                        padding: 15px 30px; 
+                        border-radius: 8px; 
+                        cursor: pointer; 
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin: 10px 0;
+                        width: 100%;
+                    ">
+                        📋 Копіювати весь текст
+                    </button>
+                </div>
+                
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #856404;">💡 Поради для редакторів:</h4>
+                    <div style="text-align: left; color: #856404; font-size: 0.9rem; line-height: 1.5;">
+                        <strong>• Блокнот (Windows):</strong> Файл → Зберегти як → Тип: "Всі файли" → Ім'я: ${fileName}<br>
+                        <strong>• VS Code:</strong> Ctrl+N → Ctrl+V → Ctrl+S → Ім'я: ${fileName}<br>
+                        <strong>• Notepad++:</strong> Ctrl+N → Ctrl+V → Ctrl+S → Ім'я: ${fileName}<br>
+                        <strong>• Онлайн:</strong> <a href="https://dillinger.io" target="_blank" style="color: #0066cc;">dillinger.io</a> - онлайн Markdown редактор
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button id="closeBtn" style="
+                        background: #dc3545; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 20px; 
+                        border-radius: 6px; 
+                        cursor: pointer; 
+                        font-size: 14px;
+                    ">
+                        ❌ Закрити
+                    </button>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 0.8rem; color: #666;">
+                    ⚠️ <strong>Важливо:</strong> Збережіть файл з розширенням <strong>.md</strong> щоб він відкривався як Markdown
+                </div>
+            `;
+            
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
+            
+            // Обробники подій
+            document.getElementById('copyTextBtn').addEventListener('click', function() {
+                navigator.clipboard.writeText(currentMarkdown).then(() => {
+                    this.innerHTML = '✅ Текст скопійовано!';
+                    this.style.background = '#28a745';
+                    logDiagnostic('📋 Текст успішно скопійовано');
+                    
+                    setTimeout(() => {
+                        alert('✅ Текст скопійовано в буфер обміну!\n\n📝 Наступні кроки:\n1. Відкрийте текстовий редактор\n2. Вставте текст (Ctrl+V)\n3. Збережіть як файл .md\n\n💡 Рекомендоване ім\'я: ' + fileName);
+                    }, 500);
+                }).catch(() => {
+                    // Fallback для старих браузерів
+                    try {
+                        const textArea = document.createElement('textarea');
+                        textArea.value = currentMarkdown;
+                        textArea.style.position = 'fixed';
+                        textArea.style.left = '-9999px';
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        
+                        this.innerHTML = '✅ Текст скопійовано!';
+                        this.style.background = '#28a745';
+                        logDiagnostic('📋 Текст скопійовано через fallback');
+                        
+                        setTimeout(() => {
+                            alert('✅ Текст скопійовано!\n\nВідкрийте редактор і вставте (Ctrl+V)');
+                        }, 500);
+                    } catch (fallbackError) {
+                        alert('❌ Помилка копіювання.\n\nСпробуйте:\n1. Виділити текст в полі результату\n2. Натиснути Ctrl+C\n3. Вставити в редактор');
+                        logDiagnostic('❌ Fallback копіювання не працює: ' + fallbackError.message);
+                    }
+                });
+            });
+            
+            document.getElementById('closeBtn').addEventListener('click', function() {
+                document.body.removeChild(overlay);
+                logDiagnostic('❌ Діалог закрито');
+            });
+            
+            // Закриття по кліку на фон
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                    logDiagnostic('❌ Діалог закрито кліком по фону');
+                }
+            });
+            
+            logDiagnostic('📋 Показано діалог копіювання тексту');
+            showMessage('📋 Використовуйте копіювання тексту для збереження', 'success');
+        }
+
+        // Перемикання розміру
+        function toggleResultSize() {
+            const textarea = document.getElementById('markdown-output');
+            const toggleText = document.getElementById('toggle-text');
+            
+            if (isResultExpanded) {
+                textarea.style.height = '400px';
+                toggleText.textContent = 'Збільшити';
+                isResultExpanded = false;
+            } else {
+                textarea.style.height = '700px';
+                toggleText.textContent = 'Зменшити';
+                isResultExpanded = true;
+            }
+        }
+
+        // Показ повідомлень
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
